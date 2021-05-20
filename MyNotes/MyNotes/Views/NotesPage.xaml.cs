@@ -1,44 +1,57 @@
-﻿using System;
+﻿using MyNotes.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
 
 namespace MyNotes.Views
 {
-    [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class NotesPage : ContentPage
     {
-        string _fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "notes.txt");
         public NotesPage()
         {
             InitializeComponent();
-
-            //Read the file
-            if (File.Exists(_fileName))
-            {
-                editor.Text = File.ReadAllText(_fileName);
-            }
-
         }
 
-        private void OnSaveButtonClicked(object sender, EventArgs e)
+        protected override void OnAppearing()
         {
-            // Save te file
-            File.WriteAllText(_fileName, editor.Text);
+            base.OnAppearing();
+            var notes = new List<Note>();
+
+            // Create a Note object from each file.
+            var files = Directory.EnumerateFiles(App.FolderPath, "*.notes.txt");
+            foreach(var fileName in files)
+            {
+                notes.Add(new Note
+                {
+                    FileName = fileName,
+                    Text = File.ReadAllText(fileName),
+                    Date = File.GetCreationTime(fileName)
+                });
+            }
+
+            // Set the data source for the CollectionView to a
+            // sorted collection of notes.
+            collectionView.ItemsSource = notes
+                .OrderBy(d => d.Date)
+                .ToList();
         }
 
-        private void OnDeleteButtonClicked(object sender, EventArgs e)
+        async void OnAddClicked(object sender, EventArgs e)
         {
-            // Delete the file
-            if (File.Exists(_fileName))
+            // Navigate to the NoteEntryPage, without passing any data.
+            await Shell.Current.GoToAsync(nameof(NoteEntryPage));
+        }
+
+        async void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if(e.CurrentSelection != null)
             {
-                File.Delete(_fileName);
+                // Navigate to the NoteEntryPage, passing the filename as a query parameter.
+                Note note = (Note)e.CurrentSelection.FirstOrDefault();
+                await Shell.Current.GoToAsync($"{nameof(NoteEntryPage)}?{nameof(NoteEntryPage.ItemId)}={note.FileName}");
             }
-            editor.Text = string.Empty;
         }
     }
 }

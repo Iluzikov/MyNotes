@@ -18,7 +18,7 @@
                 <Label.FormattedText>
                     <FormattedString>
                         <FormattedString.Spans>
-                            <Span Text="Записи"
+                            <Span Text="MyNotes"
                                   FontAttributes="Bold"
                                   FontSize="22" />
                             <Span Text=" v1.0" />
@@ -26,6 +26,7 @@
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
+            <Label Text="Разработал Лузиков Иван" />
             <Label Text="Мое первое приложение написаное на XAML, C# и Xamarin Platform." />
         </StackLayout>
     </Grid>
